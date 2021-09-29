@@ -84,6 +84,7 @@ public:
         comboBox->addItem(QString());
         comboBox->addItem(QString());
         comboBox->addItem(QString());
+        comboBox->addItem(QString());
         comboBox->setObjectName(QString::fromUtf8("comboBox"));
 
         gridLayout->addWidget(comboBox, 0, 0, 1, 1);
@@ -333,9 +334,10 @@ public:
         groupBox->setTitle(QCoreApplication::translate("MainWindow", "Flujo de Datos", nullptr));
         groupBox_2->setTitle(QCoreApplication::translate("MainWindow", "Comunicaciones", nullptr));
         comboBox->setItemText(0, QCoreApplication::translate("MainWindow", "ALIVE", nullptr));
-        comboBox->setItemText(1, QCoreApplication::translate("MainWindow", "GET_LEDS", nullptr));
-        comboBox->setItemText(2, QString());
+        comboBox->setItemText(1, QCoreApplication::translate("MainWindow", "GETBUTTOINSTATE", nullptr));
+        comboBox->setItemText(2, QCoreApplication::translate("MainWindow", "SERVO", nullptr));
         comboBox->setItemText(3, QString());
+        comboBox->setItemText(4, QString());
 
         comboBox->setCurrentText(QCoreApplication::translate("MainWindow", "ALIVE", nullptr));
         pushButtonEnviar->setText(QCoreApplication::translate("MainWindow", "Enviar", nullptr));

@@ -57,20 +57,26 @@ private:
         HEADER_3,
         NBYTES,
         TOKEN,
-        PAYLOAD
+        PAYLOAD,
+        BUTTON_DOWN,
+        BUTTON_UP
     }_eProtocolo;
 
     _eProtocolo estadoProtocolo;
 
     typedef enum{
         ALIVE=0xF0,
-        GETBUTTONSTATE=0xF1,
+        GETBUTTONSTATE=0xFA,
         LEDPRUEBA=0xF2,
+        STATELEDS=0xFB,
+        ANGULO = 0xA2,
     }_eID;
 
     _eID estadoComandos;
 
-    uint16_t nBoton[4];
+    uint16_t state;
+
+    int8_t angulo = 0;
 
     typedef struct{
         uint8_t timeOut;
@@ -81,6 +87,9 @@ private:
     }_sDatos ;
 
     _sDatos rxData, txData;
+
+    uint8_t boton[4];
+    uint16_t ledsAux;
 
     typedef union {
         float f32;

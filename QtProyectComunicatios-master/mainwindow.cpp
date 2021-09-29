@@ -12,10 +12,9 @@ MainWindow::MainWindow(QWidget *parent)
     mySettings = new SettingsDialog();
     myPaintBox = new QPaintBox(0,0,ui->widget);
     estado = new QLabel;
-    estado->setText("Desconectado............");
+    estado->setText("Desconectado...");
     ui->statusbar->addWidget(estado);
     ui->actionDesconectar->setEnabled(false);
-    //ui->widget->setVisible(false);
     estadoProtocolo=START;
     ui->pushButtonEnviar->setEnabled(false);
     estadoComandos=ALIVE;
@@ -36,11 +35,10 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     delete ui;
-//    delete paint;
-//    delete myTimer;
-//    delete mySerial;
-//    delete estado;
-//    delete mySettings;
+    delete myTimer;
+    delete mySerial;
+    delete estado;
+    delete mySettings;
 }
 
 void MainWindow::openSerialPort()
@@ -74,11 +72,11 @@ void MainWindow::closeSerialPort()
         mySerial->close();
         ui->actionDesconectar->setEnabled(false);
         ui->actionConectar->setEnabled(true);
-        estado->setText("Desconectado................");
+        estado->setText("Desconectado...");
         ui->pushButtonEnviar->setEnabled(false);
     }
     else{
-         estado->setText("Desconectado................");
+         estado->setText("Desconectado...");
          ui->pushButtonEnviar->setEnabled(false);
     }
 
@@ -116,8 +114,6 @@ void MainWindow::dataRecived()
             str = str +"{" + QString("%1").arg(incomingBuffer[i],2,16,QChar('0')) + "}";
     }
 
-    ui->textBrowser->append("MBED-->PC (" + str + ")");
-
     rxData.timeOut=5;
 
     for(int i=0;i<count; i++){
@@ -129,17 +125,17 @@ void MainWindow::dataRecived()
                 }
                 break;
             case HEADER_1:
-                if (incomingBuffer[i]=='N')
-                   estadoProtocolo=HEADER_2;
-                else{
+                if (incomingBuffer[i]=='N'){
+                    estadoProtocolo=HEADER_2;
+                }else{
                     i--;
                     estadoProtocolo=START;
                 }
                 break;
             case HEADER_2:
-                if (incomingBuffer[i]=='E')
+                if (incomingBuffer[i]=='E'){
                     estadoProtocolo=HEADER_3;
-                else{
+                }else{
                     i--;
                    estadoProtocolo=START;
                 }
@@ -177,7 +173,6 @@ void MainWindow::dataRecived()
                 if(rxData.nBytes==0){
                     estadoProtocolo=START;
                     if(rxData.cheksum==incomingBuffer[i]){
-                        ui->textBrowser->append("MBED-->PC DECODE-DATA");
                         decodeData();
                     }
                 }
@@ -192,21 +187,44 @@ void MainWindow::dataRecived()
 
 void MainWindow::decodeData()
 {
-    QString str="";
+    QString str="", s;
+    uint8_t indice;
     for(int a=1; a < rxData.index; a++){
         switch (rxData.payLoad[1]) {
             case ALIVE:
                 str = "MBED-->PC ¡ESTOY VIVO!";
                 break;
             case GETBUTTONSTATE:
-                str = "MBED-->PC ESTADO DE LOS BOTONES";
-                myWord.ui8[0]=rxData.payLoad[2];
-                myWord.ui8[1]=rxData.payLoad[3];
-//                fondo();
+                indice = rxData.payLoad[2];
+                s.setNum(indice);
+                state = rxData.payLoad[3];
+                myWord.ui8[0]=rxData.payLoad[4];
+                myWord.ui8[1]=rxData.payLoad[5];
+                myWord.ui8[2]=rxData.payLoad[6];
+                myWord.ui8[3]=rxData.payLoad[7];
+                if(state == 0){
+                    str = ("MBED-->PC DOWN "+ s +"");
+                    boton[indice] = 1;
+                    fondo();
+                }
+                if(state == 1){
+                    str = "MBED-->PC UP "+ s +"";
+                    boton[indice] = 0;
+                    fondo();
+                }
                 break;
             case LEDPRUEBA:
-                str = "MBED-->PC LED DE PRUEBA ENCENDIDO  ";
+                str = "MBED-->PC LED DE PRUEBA RECIBIDO";
                 break;
+            case STATELEDS:
+                myWord.ui8[0] = rxData.payLoad[2];
+                myWord.ui8[1] = rxData.payLoad[3];
+                ledsAux = myWord.ui16[0];
+                s.setNum(ledsAux);
+                str = "MBED-->PC STATELEDS RECIBIDO    "+ s +"";
+
+                break;
+
             default:
                 str=((char *)rxData.payLoad);
                 str= ("MBED-->PC *ID Invalido * (" + str + ")");
@@ -235,10 +253,12 @@ void MainWindow::on_pushButtonEnviar_clicked()
             txData.payLoad[txData.index++]=ALIVE;
             txData.payLoad[NBYTES]=0x02;
             str = "Sending ALIVE  ";
+            estadoComandos = GETBUTTONSTATE;
             break;
         case GETBUTTONSTATE:
             txData.payLoad[txData.index++]=GETBUTTONSTATE;
             txData.payLoad[NBYTES]=0x02;
+            str = "Sending GETBUTTONSTATE  ";
             break;
         case LEDPRUEBA:
             txData.payLoad[txData.index++]=LEDPRUEBA;
@@ -266,6 +286,11 @@ void MainWindow::on_pushButtonEnviar_clicked()
             txData.payLoad[txData.index++] = myWord.ui8[0];
             txData.payLoad[txData.index++] = myWord.ui8[1];
             txData.payLoad[NBYTES]=0x04;
+            break;
+        case ANGULO:
+            txData.payLoad[txData.index++] = ANGULO;
+            txData.payLoad[txData.index++] = angulo;
+            txData.payLoad[NBYTES] = 0x03;
             break;
         default:
             break;
@@ -298,6 +323,9 @@ void MainWindow::on_comboBox_currentIndexChanged(int index)
         case 2:
             estadoComandos=GETBUTTONSTATE;
         break;
+        case 3:
+            estadoComandos=ANGULO;
+        break;
     default:
         break;
     }
@@ -306,7 +334,7 @@ void MainWindow::on_comboBox_currentIndexChanged(int index)
 void MainWindow::fondo(){
 
     QPen pen;
-    int16_t posx = 0,posy = 0;
+    int16_t posx = 0,posy = 0, leds = 0;
     uint8_t radio = 30,lado = 50;
     QColor selfColor;
     QPainter paint(myPaintBox->getCanvas());
@@ -317,81 +345,82 @@ void MainWindow::fondo(){
     pen.setColor(Qt::black);
     paint.setPen(pen);
 
-
     for(int i=0;i<4;i++){
-        switch(nBoton[i]){
-            case 1:
-                pen.setWidth(1);
-                paint.setPen(pen);
-                paint.setBrush(Qt::red);
-                paint.drawEllipse(posx,posy,radio,radio);
-            break;
-            case 2:
-                pen.setWidth(1);
-                paint.setPen(pen);
-                paint.setBrush(Qt::yellow);
-                paint.drawEllipse(posx,posy,radio,radio);
-            break;
-            case 3:
-                pen.setWidth(1);
-                paint.setPen(pen);
-                paint.setBrush(Qt::blue);
-                paint.drawEllipse(posx,posy,radio,radio);
-            break;
-            case 4:
-                pen.setWidth(1);
-                paint.setPen(pen);
-                paint.setBrush(Qt::green);
-                paint.drawEllipse(posx,posy,radio,radio);
-            break;
-            default:
-                pen.setWidth(1);
-                paint.setPen(pen);
-                paint.setBrush(Qt::gray);
-                paint.drawEllipse(posx,posy,radio,radio);
-            break;
+        if((leds|=1<<i) & ledsAux){
+            pen.setWidth(1);
+            paint.setPen(pen);
+            switch(i){
+                case 0:
+                    paint.setBrush(Qt::magenta);
+                break;
+                case 1:
+                    paint.setBrush(Qt::red);
+                break;
+                case 2:
+                    paint.setBrush(Qt::blue);
+                break;
+                case 3:
+                    paint.setBrush(Qt::green);
+                break;
+                default:
+                    break;
+            }
+            paint.drawEllipse(posx,posy,radio,radio);
+        }else{
+            pen.setWidth(1);
+            paint.setPen(pen);
+            paint.setBrush(Qt::gray);
+            paint.drawEllipse(posx,posy,radio,radio);
         }
 
-        pen.setWidth(3);
-        paint.setPen(pen);
-        paint.setBrush(Qt::gray);
-        paint.drawRect(posx-10,posy+60,lado,lado);
-        paint.setBrush(Qt::black);
-        paint.drawEllipse(posx+5,posy+75,radio-10,radio-10);
-        posx +=172;
+        if(boton[i]){
+            pen.setWidth(3);
+            paint.setPen(pen);
+            paint.setBrush(Qt::darkGray);
+            paint.drawRect(posx-10,posy+60,lado,lado);
+            paint.setBrush(Qt::black);
+            paint.drawEllipse(posx+5,posy+75,radio-10,radio-10);
+            posx += 172;
+        }else{
+            pen.setWidth(3);
+            paint.setPen(pen);
+            paint.setBrush(Qt::gray);
+            paint.drawRect(posx-10,posy+60,lado,lado);
+            paint.setBrush(Qt::black);
+            paint.drawEllipse(posx+5,posy+75,radio-10,radio-10);
+            posx += 172;
+        }
+
+        leds = 0;
     }
 
     myPaintBox->update();
 }
 
 //**************************************************************************//
-            //*******************BOTNOES*******************//
+            //*******************BOTONES*******************//
 
 void MainWindow::on_ledPruebaR_toggled(bool checked)
 {
-        if(checked){
-            estadoComandos = LEDPRUEBA;
-            nBoton[0] = 1;
-            fondo();
-            on_pushButtonEnviar_clicked();
-        }else{
-            estadoComandos = LEDPRUEBA;
-            nBoton[0] = 0;
-            fondo();
-            on_pushButtonEnviar_clicked();
-        }
+    if(checked){
+        estadoComandos = LEDPRUEBA;
+        fondo();
+        on_pushButtonEnviar_clicked();
+    }else{
+        estadoComandos = LEDPRUEBA;
+        fondo();
+        on_pushButtonEnviar_clicked();
+    }
 }
 
 void MainWindow::on_ledPruebaA_toggled(bool checked)
 {
     if(checked){
         estadoComandos = LEDPRUEBA;
-        nBoton[1] = 2;
         fondo();
         on_pushButtonEnviar_clicked();
     }else{
         estadoComandos = LEDPRUEBA;
-        nBoton[1] = 0;
         fondo();
         on_pushButtonEnviar_clicked();
     }
@@ -401,12 +430,10 @@ void MainWindow::on_ledPruebaAm_toggled(bool checked)
 {
     if(checked){
         estadoComandos = LEDPRUEBA;
-        nBoton[2] = 3;
         fondo();
         on_pushButtonEnviar_clicked();
     }else{
         estadoComandos = LEDPRUEBA;
-        nBoton[2] = 0;
         fondo();
         on_pushButtonEnviar_clicked();
     }
@@ -416,12 +443,10 @@ void MainWindow::on_ledPruebaV_toggled(bool checked)
 {
     if(checked){
         estadoComandos = LEDPRUEBA;
-        nBoton[3] = 4;
         fondo();
         on_pushButtonEnviar_clicked();
     }else{
         estadoComandos = LEDPRUEBA;
-        nBoton[3] = 0;
         fondo();
         on_pushButtonEnviar_clicked();
     }

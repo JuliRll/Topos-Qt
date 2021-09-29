@@ -83,6 +83,11 @@
        </item>
        <item>
         <property name="text">
+         <string>SERVO</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
          <string/>
         </property>
        </item>
