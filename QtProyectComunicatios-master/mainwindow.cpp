@@ -30,6 +30,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     myTimer->start(50);
 
+
 }
 
 MainWindow::~MainWindow()
@@ -213,8 +214,6 @@ void MainWindow::decodeData()
                     fondo();
                 }
                 break;
-            case LEDPRUEBA:
-                str = "MBED-->PC LED DE PRUEBA RECIBIDO";
                 break;
             case STATELEDS:
                 myWord.ui8[0] = rxData.payLoad[2];
@@ -224,6 +223,11 @@ void MainWindow::decodeData()
                 str = "MBED-->PC STATELEDS RECIBIDO    "+ s +"";
 
                 break;
+
+            case SETLEDS:
+                str = "MBED-->PC SETLEDS RECIBIDO";
+            break;
+
 
             default:
                 str=((char *)rxData.payLoad);
@@ -238,7 +242,6 @@ void MainWindow::decodeData()
 
 void MainWindow::on_pushButtonEnviar_clicked()
 {
-    uint16_t auxleds=0;
     QString str="";
     txData.index=0;
     txData.payLoad[txData.index++]='U';
@@ -253,39 +256,18 @@ void MainWindow::on_pushButtonEnviar_clicked()
             txData.payLoad[txData.index++]=ALIVE;
             txData.payLoad[NBYTES]=0x02;
             str = "Sending ALIVE  ";
-            estadoComandos = GETBUTTONSTATE;
             break;
         case GETBUTTONSTATE:
             txData.payLoad[txData.index++]=GETBUTTONSTATE;
             txData.payLoad[NBYTES]=0x02;
             str = "Sending GETBUTTONSTATE  ";
             break;
-        case LEDPRUEBA:
-            txData.payLoad[txData.index++]=LEDPRUEBA;
-            if(ui->ledPruebaR->isChecked()){
-                auxleds |= 1 <<3;
-            }else{
-                auxleds &= ~(1<<3);
-            }
-            if(ui->ledPruebaA->isChecked()){
-                auxleds |= 1 <<2;
-            }else{
-                auxleds &= ~(1<<2);
-            }
-            if(ui->ledPruebaAm->isChecked()){
-                auxleds |= 1 <<1;
-            }else{
-                auxleds &= ~(1<<1);
-            }
-            if(ui->ledPruebaV->isChecked()){
-                auxleds |= 1 <<0;
-            }else{
-                auxleds &= ~(1<<0);
-            }
-            myWord.ui16[0] = auxleds;
-            txData.payLoad[txData.index++] = myWord.ui8[0];
-            txData.payLoad[txData.index++] = myWord.ui8[1];
+        case SETLEDS:
+            txData.payLoad[txData.index++]=SETLEDS;
+            txData.payLoad[txData.index++] = num[1];
+            txData.payLoad[txData.index++] = auxstate;
             txData.payLoad[NBYTES]=0x04;
+            str = "Sending SETLEDS ";
             break;
         case ANGULO:
             txData.payLoad[txData.index++] = ANGULO;
@@ -324,7 +306,8 @@ void MainWindow::on_comboBox_currentIndexChanged(int index)
             estadoComandos=GETBUTTONSTATE;
         break;
         case 3:
-            estadoComandos=ANGULO;
+            estadoComandos = SETLEDS;
+//            manejadorLed(2,1);
         break;
     default:
         break;
@@ -372,6 +355,7 @@ void MainWindow::fondo(){
             paint.setBrush(Qt::gray);
             paint.drawEllipse(posx,posy,radio,radio);
         }
+        leds = 0;
 
         if(boton[i]){
             pen.setWidth(3);
@@ -390,65 +374,53 @@ void MainWindow::fondo(){
             paint.drawEllipse(posx+5,posy+75,radio-10,radio-10);
             posx += 172;
         }
-
-        leds = 0;
     }
 
     myPaintBox->update();
 }
 
-//**************************************************************************//
-            //*******************BOTONES*******************//
+//void MainWindow::manejadorLed(uint8_t numLed, uint8_t ledState)
+//{
+//    leds[numLed] = ledState;
+//}
 
-void MainWindow::on_ledPruebaR_toggled(bool checked)
-{
-    if(checked){
-        estadoComandos = LEDPRUEBA;
-        fondo();
-        on_pushButtonEnviar_clicked();
-    }else{
-        estadoComandos = LEDPRUEBA;
-        fondo();
-        on_pushButtonEnviar_clicked();
-    }
-}
 
-void MainWindow::on_ledPruebaA_toggled(bool checked)
-{
-    if(checked){
-        estadoComandos = LEDPRUEBA;
-        fondo();
-        on_pushButtonEnviar_clicked();
-    }else{
-        estadoComandos = LEDPRUEBA;
-        fondo();
-        on_pushButtonEnviar_clicked();
-    }
-}
 
-void MainWindow::on_ledPruebaAm_toggled(bool checked)
-{
-    if(checked){
-        estadoComandos = LEDPRUEBA;
-        fondo();
-        on_pushButtonEnviar_clicked();
-    }else{
-        estadoComandos = LEDPRUEBA;
-        fondo();
-        on_pushButtonEnviar_clicked();
-    }
-}
 
-void MainWindow::on_ledPruebaV_toggled(bool checked)
-{
-    if(checked){
-        estadoComandos = LEDPRUEBA;
-        fondo();
-        on_pushButtonEnviar_clicked();
-    }else{
-        estadoComandos = LEDPRUEBA;
-        fondo();
-        on_pushButtonEnviar_clicked();
-    }
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

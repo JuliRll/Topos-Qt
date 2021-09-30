@@ -37,10 +37,8 @@ private slots:
 
     void fondo();
 
-    void on_ledPruebaR_toggled(bool checked);
-    void on_ledPruebaA_toggled(bool checked);
-    void on_ledPruebaAm_toggled(bool checked);
-    void on_ledPruebaV_toggled(bool checked);
+//    void manejadorLed(uint8_t numLed, uint8_t ledState);
+
 
 private:
     Ui::MainWindow *ui;
@@ -67,8 +65,8 @@ private:
     typedef enum{
         ALIVE=0xF0,
         GETBUTTONSTATE=0xFA,
-        LEDPRUEBA=0xF2,
         STATELEDS=0xFB,
+        SETLEDS=0xFC,
         ANGULO = 0xA2,
     }_eID;
 
@@ -89,6 +87,8 @@ private:
     _sDatos rxData, txData;
 
     uint8_t boton[4];
+    uint8_t num[4] = {1,2,4,8};
+    uint8_t auxstate = 1;
     uint16_t ledsAux;
 
     typedef union {
