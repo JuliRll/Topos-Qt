@@ -8,30 +8,29 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     myTimer = new QTimer(this);
-    mySerial = new QSerialPort(this);
-    mySettings = new SettingsDialog();
+
     myPaintBox = new QPaintBox(0,0,ui->widget);
     estado = new QLabel;
     estado->setText("Desconectado...");
     ui->statusbar->addWidget(estado);
-    ui->actionDesconectar->setEnabled(false);
+    ui->estado1->setText("Estado: Desconectado");
+    ui->puntaje_2->display(2);
     estadoProtocolo=START;
     estadoComandos=ALIVE;
-    estadoJuego = CONNECT;
+    estadoJuego = WAIT;
 
-    ///Conexión de eventos
-    connect(mySerial,&QSerialPort::readyRead,this, &MainWindow::dataRecived );
-
-
-   //connect(mySerial,&QSerialPort::readChannelFinished,this,&MainWindow::next);
-
+    mySerial = new QSerialPort(this);
+    mySerial->setPortName("COM5");
+    mySerial->setBaudRate(115200);
+    mySerial->setDataBits(QSerialPort::Data8);
+    mySerial->setParity(QSerialPort::NoParity);
+    mySerial->setFlowControl(QSerialPort::NoFlowControl);
+    connect(mySerial,&QSerialPort::readyRead,this, &MainWindow::dataRecived);
 
     connect(myTimer, &QTimer::timeout,this, &MainWindow::myTimerOnTime);
-    connect(ui->actionEscaneo_de_Puertos, &QAction::triggered, mySettings, &SettingsDialog::show);
-    connect(ui->actionConectar,&QAction::triggered,this, &MainWindow::openSerialPort);
-    connect(ui->actionConectar,&QAction::triggered,this, &MainWindow::fondo);
-    connect(ui->actionConectar,&QAction::triggered,this, &MainWindow::Send);
-    connect(ui->actionDesconectar, &QAction::triggered, this, &MainWindow::closeSerialPort);
+    connect(ui->Conectar,&QAction::triggered,this, &MainWindow::openSerialPort);
+    connect(ui->Conectar,&QAction::triggered,this, &MainWindow::fondo);
+    connect(ui->Conectar,&QAction::triggered,this, &MainWindow::Send);
     connect(ui->actionSalir,&QAction::triggered,this,&MainWindow::close );
 
     myTimer->start(50);
@@ -45,32 +44,18 @@ MainWindow::~MainWindow()
     delete myTimer;
     delete mySerial;
     delete estado;
-    delete mySettings;
 }
 
 void MainWindow::openSerialPort()
 {
-    SettingsDialog::Settings p = mySettings->settings();
-    mySerial->setPortName(p.name);
-    mySerial->setBaudRate(p.baudRate);
-    mySerial->setDataBits(p.dataBits);
-    mySerial->setParity(p.parity);
-    mySerial->setStopBits(p.stopBits);
-    mySerial->setFlowControl(p.flowControl);
     mySerial->open(QSerialPort::ReadWrite);
     if(mySerial->isOpen()){
-        ui->actionConectar->setEnabled(false);
-        ui->actionDesconectar->setEnabled(true);
-
-        estado->setText(tr("Conectado a  %1 : %2, %3, %4, %5, %6  %7")
-                                         .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
-                                         .arg(p.stringParity).arg(p.stringStopBits).arg(p.stringFlowControl).arg(p.fabricante));
+        estado->setText("Conectado");
+        ui->estado1->setText("Estado: Conectado");
     }
     else{
-        QMessageBox::warning(this,"Menu Conectar","No se pudo abrir el puerto Serie!!!!");
+        QMessageBox::warning(this,"Menu Conectar","No se pudo abrir el puerto Serie");
     }
-
-
 }
 
 void MainWindow::closeSerialPort()
@@ -188,6 +173,11 @@ void MainWindow::dataRecived()
         }
     }
     delete [] incomingBuffer;
+    if((timeRead > 1000) && (enabled == 1)){
+        enabled = 0;
+        return juego();
+        timeRead = 0;
+    }
 }
 
 void MainWindow::decodeData()
@@ -223,6 +213,7 @@ void MainWindow::decodeData()
                     fondo();
                 }
                 if(timeRead > 1000){
+                    enabled = 1;
                     s.setNum(timeRead);
                     str = str + "TIME "+ s +"";
                 }
@@ -390,45 +381,31 @@ void MainWindow::fondo(){
 
 void MainWindow::juego()
 {
-    switch (estadoJuego) {
-    case CONNECT:
-        ui->textBrowser->append("CONNECT");
-//        if(globalCount == 0){
-//            estadoComandos = ALIVE;
-//            Send();
-//        }
-//        if(globalCount == 1){
-//            estadoComandos = GETBUTTONSTATE;
-//            Send();
-//        }
-//        if(globalCount == 2){
-//            estadoComandos = STATELEDS;
-//            estadoJuego = WAIT;
-//            Send();
-//        }
-        break;
-    case WAIT:
-        ui->textBrowser->append("WAIT");
-//        if(timeRead > 1000 && globalCount == 3){
-//            estadoComandos = SETLEDS;
-//            auxNum = 5;
-//            Send();
-//        }
-//        if(globalCount == 4){
-//            estadoComandos = STATELEDS;
-//            estadoJuego = PLAY;
-//            Send();
-//        }
-        break;
-    case PLAY:
-        ui->textBrowser->append("PLAY");
-        break;
+    while(true){
+        switch (estadoJuego) {
+        case WAIT:
+            ui->textBrowser->setTextColor(Qt::darkBlue);
+            ui->estado1->setText("Estado: WAIT");
+            auxNum = 5;
+            estadoComandos = SETLEDS;
+            Send();
+            estadoComandos = GETLEDS;
+            Send();
+            estadoJuego = INTRO;
+        case INTRO:
+            ui->textBrowser->setTextColor(Qt::darkBlue);
+            ui->estado1->setText("Estado: INTRO");
+            break;
+        case PLAY:
+            ui->textBrowser->setTextColor(Qt::darkBlue);
+            ui->estado1->setText("Estado: PLAY");
+            break;
 
-    default:
-        break;
+        default:
+            break;
+        }
     }
 
-    ui->textBrowser->append("ENDGAME");
 }
 
 
@@ -450,4 +427,5 @@ void MainWindow::on_pushButton_3_clicked()
     estadoComandos = GETBUTTONS;
     Send();
 }
+
 

@@ -5,8 +5,8 @@
 #include <QtSerialPort/QSerialPort>
 #include <QTimer>
 #include <QLabel>
-#include "settingsdialog.h"
-#include "qpaintbox.h"
+#include <qpaintbox.h>
+#include <QMessageBox>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -48,7 +48,6 @@ private:
     QSerialPort *mySerial;
     QTimer *myTimer;
     QPaintBox *myPaintBox;
-    SettingsDialog *mySettings;
     QLabel *estado;
 
     typedef enum{
@@ -71,14 +70,13 @@ private:
         GETBUTTONS = 0xFD,
         GETLEDS=0xFB,
         SETLEDS=0xFC,
-        ANGULO = 0xA2,
     }_eID;
 
     _eID estadoComandos;
 
     typedef enum{
-        CONNECT,
         WAIT,
+        INTRO,
         PLAY,
     }_eGame;
 
@@ -99,10 +97,11 @@ private:
     _sDatos rxData, txData;
 
     uint8_t boton[4] = {0,0,0,0};
-    uint8_t num[6] = {10,2,4,8,0,15};
+    uint8_t num[6] = {1,2,4,8,0,15};
     uint8_t auxState = 1,auxNum = 0;
     uint16_t ledsAux,buttonsAux;
-    uint32_t timeRead;
+    uint32_t timeRead = 0;
+    int enabled = 0;
 
     typedef union {
         float f32;

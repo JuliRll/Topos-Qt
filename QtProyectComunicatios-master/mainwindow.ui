@@ -21,7 +21,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>189</y>
+      <y>210</y>
       <width>860</width>
       <height>191</height>
      </rect>
@@ -30,9 +30,9 @@
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>180</x>
-      <y>10</y>
-      <width>711</width>
+      <x>410</x>
+      <y>0</y>
+      <width>481</width>
       <height>151</height>
      </rect>
     </property>
@@ -42,9 +42,9 @@
     <widget class="QTextBrowser" name="textBrowser">
      <property name="geometry">
       <rect>
-       <x>20</x>
+       <x>70</x>
        <y>20</y>
-       <width>661</width>
+       <width>401</width>
        <height>121</height>
       </rect>
      </property>
@@ -53,8 +53,8 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>20</y>
+      <x>720</x>
+      <y>160</y>
       <width>80</width>
       <height>21</height>
      </rect>
@@ -66,8 +66,8 @@
    <widget class="QPushButton" name="pushButton_2">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>50</y>
+      <x>620</x>
+      <y>160</y>
       <width>80</width>
       <height>21</height>
      </rect>
@@ -79,14 +79,140 @@
    <widget class="QPushButton" name="pushButton_3">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>80</y>
+      <x>520</x>
+      <y>160</y>
       <width>80</width>
       <height>21</height>
      </rect>
     </property>
     <property name="text">
      <string>GET BUTTONS</string>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="puntaje_2">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>10</y>
+      <width>64</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(0, 0, 0);</string>
+    </property>
+    <property name="frameShadow">
+     <enum>QFrame::Plain</enum>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="aciertos_2">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>40</y>
+      <width>64</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(0, 0, 0);</string>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="errores_2">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>70</y>
+      <width>64</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(0, 0, 0);</string>
+    </property>
+   </widget>
+   <widget class="QLCDNumber" name="fallos_2">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>100</y>
+      <width>64</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">background-color: rgb(0, 0, 0);</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="aciertos">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>40</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>ACIERTOS</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="errores">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>70</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>ERRORES</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="fallos">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>100</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>FALLOS</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="estado1">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>181</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Estado: </string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="puntaje">
+    <property name="geometry">
+     <rect>
+      <x>220</x>
+      <y>10</y>
+      <width>71</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>PUNTAJE</string>
     </property>
    </widget>
   </widget>
@@ -103,16 +229,8 @@
     <property name="title">
      <string>Menu</string>
     </property>
-    <widget class="QMenu" name="menuComunicaci_n">
-     <property name="title">
-      <string>Comunicación</string>
-     </property>
-     <addaction name="actionEscaneo_de_Puertos"/>
-     <addaction name="actionDesconectar"/>
-     <addaction name="actionConectar"/>
-    </widget>
-    <addaction name="menuComunicaci_n"/>
     <addaction name="actionSalir"/>
+    <addaction name="Conectar"/>
    </widget>
    <addaction name="menuMenu"/>
   </widget>
@@ -136,6 +254,11 @@
    </property>
   </action>
   <action name="actionConectar">
+   <property name="text">
+    <string>Conectar</string>
+   </property>
+  </action>
+  <action name="Conectar">
    <property name="text">
     <string>Conectar</string>
    </property>
