@@ -31,14 +31,17 @@ private slots:
 
     void decodeData();
 
-    void on_pushButtonEnviar_clicked();
-
-    void on_comboBox_currentIndexChanged(int index);
+    void Send();
 
     void fondo();
 
-//    void manejadorLed(uint8_t numLed, uint8_t ledState);
+    void juego();
 
+    void on_pushButton_clicked();
+
+    void on_pushButton_2_clicked();
+
+    void on_pushButton_3_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -65,14 +68,23 @@ private:
     typedef enum{
         ALIVE=0xF0,
         GETBUTTONSTATE=0xFA,
-        STATELEDS=0xFB,
+        GETBUTTONS = 0xFD,
+        GETLEDS=0xFB,
         SETLEDS=0xFC,
         ANGULO = 0xA2,
     }_eID;
 
     _eID estadoComandos;
 
-    uint16_t state;
+    typedef enum{
+        CONNECT,
+        WAIT,
+        PLAY,
+    }_eGame;
+
+    _eGame estadoJuego;
+
+    uint16_t state, globalCount = 0;
 
     int8_t angulo = 0;
 
@@ -86,10 +98,11 @@ private:
 
     _sDatos rxData, txData;
 
-    uint8_t boton[4];
-    uint8_t num[4] = {1,2,4,8};
-    uint8_t auxstate = 1;
-    uint16_t ledsAux;
+    uint8_t boton[4] = {0,0,0,0};
+    uint8_t num[6] = {10,2,4,8,0,15};
+    uint8_t auxState = 1,auxNum = 0;
+    uint16_t ledsAux,buttonsAux;
+    uint32_t timeRead;
 
     typedef union {
         float f32;

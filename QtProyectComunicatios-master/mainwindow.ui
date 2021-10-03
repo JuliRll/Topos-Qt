@@ -30,9 +30,9 @@
    <widget class="QGroupBox" name="groupBox">
     <property name="geometry">
      <rect>
-      <x>200</x>
+      <x>180</x>
       <y>10</y>
-      <width>691</width>
+      <width>711</width>
       <height>151</height>
      </rect>
     </property>
@@ -50,67 +50,44 @@
      </property>
     </widget>
    </widget>
-   <widget class="QGroupBox" name="groupBox_2">
+   <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>30</y>
-      <width>162</width>
-      <height>97</height>
+      <y>20</y>
+      <width>80</width>
+      <height>21</height>
      </rect>
     </property>
-    <property name="title">
-     <string>Comunicaciones</string>
+    <property name="text">
+     <string>SET LEDS</string>
     </property>
-    <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QComboBox" name="comboBox">
-       <property name="currentText">
-        <string>Selector de comandos</string>
-       </property>
-       <property name="currentIndex">
-        <number>0</number>
-       </property>
-       <item>
-        <property name="text">
-         <string>Selector de comandos</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>ALIVE</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>GETBUTTONSTATE</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string>SETLEDS</string>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-       <item>
-        <property name="text">
-         <string/>
-        </property>
-       </item>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <widget class="QPushButton" name="pushButtonEnviar">
-       <property name="text">
-        <string>Enviar</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+   </widget>
+   <widget class="QPushButton" name="pushButton_2">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>50</y>
+      <width>80</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>GET LEDS</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_3">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>80</y>
+      <width>80</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>GET BUTTONS</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">

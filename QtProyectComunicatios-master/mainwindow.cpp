@@ -16,15 +16,21 @@ MainWindow::MainWindow(QWidget *parent)
     ui->statusbar->addWidget(estado);
     ui->actionDesconectar->setEnabled(false);
     estadoProtocolo=START;
-    ui->pushButtonEnviar->setEnabled(false);
     estadoComandos=ALIVE;
+    estadoJuego = CONNECT;
 
     ///Conexión de eventos
     connect(mySerial,&QSerialPort::readyRead,this, &MainWindow::dataRecived );
+
+
+   //connect(mySerial,&QSerialPort::readChannelFinished,this,&MainWindow::next);
+
+
     connect(myTimer, &QTimer::timeout,this, &MainWindow::myTimerOnTime);
     connect(ui->actionEscaneo_de_Puertos, &QAction::triggered, mySettings, &SettingsDialog::show);
     connect(ui->actionConectar,&QAction::triggered,this, &MainWindow::openSerialPort);
     connect(ui->actionConectar,&QAction::triggered,this, &MainWindow::fondo);
+    connect(ui->actionConectar,&QAction::triggered,this, &MainWindow::Send);
     connect(ui->actionDesconectar, &QAction::triggered, this, &MainWindow::closeSerialPort);
     connect(ui->actionSalir,&QAction::triggered,this,&MainWindow::close );
 
@@ -55,7 +61,7 @@ void MainWindow::openSerialPort()
     if(mySerial->isOpen()){
         ui->actionConectar->setEnabled(false);
         ui->actionDesconectar->setEnabled(true);
-        ui->pushButtonEnviar->setEnabled(true);
+
         estado->setText(tr("Conectado a  %1 : %2, %3, %4, %5, %6  %7")
                                          .arg(p.name).arg(p.stringBaudRate).arg(p.stringDataBits)
                                          .arg(p.stringParity).arg(p.stringStopBits).arg(p.stringFlowControl).arg(p.fabricante));
@@ -74,11 +80,9 @@ void MainWindow::closeSerialPort()
         ui->actionDesconectar->setEnabled(false);
         ui->actionConectar->setEnabled(true);
         estado->setText("Desconectado...");
-        ui->pushButtonEnviar->setEnabled(false);
     }
     else{
          estado->setText("Desconectado...");
-         ui->pushButtonEnviar->setEnabled(false);
     }
 
 }
@@ -190,10 +194,12 @@ void MainWindow::decodeData()
 {
     QString str="", s;
     uint8_t indice;
+
     for(int a=1; a < rxData.index; a++){
         switch (rxData.payLoad[1]) {
             case ALIVE:
                 str = "MBED-->PC ¡ESTOY VIVO!";
+                ui->textBrowser->setTextColor(Qt::red);
                 break;
             case GETBUTTONSTATE:
                 indice = rxData.payLoad[2];
@@ -203,44 +209,57 @@ void MainWindow::decodeData()
                 myWord.ui8[1]=rxData.payLoad[5];
                 myWord.ui8[2]=rxData.payLoad[6];
                 myWord.ui8[3]=rxData.payLoad[7];
+                timeRead = myWord.ui32;
                 if(state == 0){
-                    str = ("MBED-->PC DOWN "+ s +"");
+                    str = "MBED-->PC DOWN";
+                    ui->textBrowser->setTextColor(Qt::darkYellow);
                     boton[indice] = 1;
                     fondo();
                 }
                 if(state == 1){
-                    str = "MBED-->PC UP "+ s +"";
+                    str = "MBED-->PC UP";
+                    ui->textBrowser->setTextColor(Qt::darkYellow);
                     boton[indice] = 0;
                     fondo();
                 }
+                if(timeRead > 1000){
+                    s.setNum(timeRead);
+                    str = str + "TIME "+ s +"";
+                }
                 break;
+            case GETBUTTONS:
+                myWord.ui8[0] = rxData.payLoad[2];
+                myWord.ui8[1] = rxData.payLoad[3];
+                buttonsAux = myWord.ui16[0];
+                s.setNum(buttonsAux);
+                str = "MBED-->PC GETBUTTONS RECIBIDO   "+ s +" ";
+                ui->textBrowser->setTextColor(Qt::darkCyan);
                 break;
-            case STATELEDS:
+            case GETLEDS:
                 myWord.ui8[0] = rxData.payLoad[2];
                 myWord.ui8[1] = rxData.payLoad[3];
                 ledsAux = myWord.ui16[0];
                 s.setNum(ledsAux);
-                str = "MBED-->PC STATELEDS RECIBIDO    "+ s +"";
-
+                str = "MBED-->PC GETLEDS RECIBIDO    "+ s +"";
+                ui->textBrowser->setTextColor(Qt::darkCyan);
+                fondo();
                 break;
-
             case SETLEDS:
                 str = "MBED-->PC SETLEDS RECIBIDO";
+                ui->textBrowser->setTextColor(Qt::darkCyan);
             break;
-
 
             default:
                 str=((char *)rxData.payLoad);
                 str= ("MBED-->PC *ID Invalido * (" + str + ")");
+                ui->textBrowser->setTextColor(Qt::darkRed);
                 break;
         }
     }
     ui->textBrowser->append(str);
-
 }
 
-
-void MainWindow::on_pushButtonEnviar_clicked()
+void MainWindow::Send()
 {
     QString str="";
     txData.index=0;
@@ -251,7 +270,7 @@ void MainWindow::on_pushButtonEnviar_clicked()
     txData.payLoad[txData.index++]=0;
     txData.payLoad[txData.index++]=':';
 
-    switch (estadoComandos) {
+    switch (estadoComandos){
         case ALIVE:
             txData.payLoad[txData.index++]=ALIVE;
             txData.payLoad[NBYTES]=0x02;
@@ -262,17 +281,23 @@ void MainWindow::on_pushButtonEnviar_clicked()
             txData.payLoad[NBYTES]=0x02;
             str = "Sending GETBUTTONSTATE  ";
             break;
+        case GETBUTTONS:
+            txData.payLoad[txData.index++] = GETBUTTONS;
+            txData.payLoad[NBYTES] = 0x02;
+            str = "Sending GETBUTTONS";
+            break;
         case SETLEDS:
             txData.payLoad[txData.index++]=SETLEDS;
-            txData.payLoad[txData.index++] = num[1];
-            txData.payLoad[txData.index++] = auxstate;
+            txData.payLoad[txData.index++] = num[auxNum];
+            txData.payLoad[txData.index++] = auxState;
             txData.payLoad[NBYTES]=0x04;
             str = "Sending SETLEDS ";
+            fondo();
             break;
-        case ANGULO:
-            txData.payLoad[txData.index++] = ANGULO;
-            txData.payLoad[txData.index++] = angulo;
-            txData.payLoad[NBYTES] = 0x03;
+        case GETLEDS:
+            txData.payLoad[txData.index++] = GETLEDS;
+            txData.payLoad[NBYTES] = 0x02;
+            str = "Sending GETLEDS ";
             break;
         default:
             break;
@@ -292,26 +317,8 @@ void MainWindow::on_pushButtonEnviar_clicked()
         else
             str = str +"{" + QString("%1").arg(txData.payLoad[i],2,16,QChar('0')) + "}";
     }
+    ui->textBrowser->setTextColor(Qt::darkMagenta);
     ui->textBrowser->append("PC-->MBED (" + str + ")");
-
-}
-
-void MainWindow::on_comboBox_currentIndexChanged(int index)
-{
-    switch (index) {
-        case 1:
-            estadoComandos=ALIVE;
-        break;
-        case 2:
-            estadoComandos=GETBUTTONSTATE;
-        break;
-        case 3:
-            estadoComandos = SETLEDS;
-//            manejadorLed(2,1);
-        break;
-    default:
-        break;
-    }
 }
 
 void MainWindow::fondo(){
@@ -349,15 +356,17 @@ void MainWindow::fondo(){
                     break;
             }
             paint.drawEllipse(posx,posy,radio,radio);
+
         }else{
             pen.setWidth(1);
             paint.setPen(pen);
             paint.setBrush(Qt::gray);
             paint.drawEllipse(posx,posy,radio,radio);
         }
+
         leds = 0;
 
-        if(boton[i]){
+        if(boton[i] == 1){
             pen.setWidth(3);
             paint.setPen(pen);
             paint.setBrush(Qt::darkGray);
@@ -379,48 +388,66 @@ void MainWindow::fondo(){
     myPaintBox->update();
 }
 
-//void MainWindow::manejadorLed(uint8_t numLed, uint8_t ledState)
-//{
-//    leds[numLed] = ledState;
-//}
+void MainWindow::juego()
+{
+    switch (estadoJuego) {
+    case CONNECT:
+        ui->textBrowser->append("CONNECT");
+//        if(globalCount == 0){
+//            estadoComandos = ALIVE;
+//            Send();
+//        }
+//        if(globalCount == 1){
+//            estadoComandos = GETBUTTONSTATE;
+//            Send();
+//        }
+//        if(globalCount == 2){
+//            estadoComandos = STATELEDS;
+//            estadoJuego = WAIT;
+//            Send();
+//        }
+        break;
+    case WAIT:
+        ui->textBrowser->append("WAIT");
+//        if(timeRead > 1000 && globalCount == 3){
+//            estadoComandos = SETLEDS;
+//            auxNum = 5;
+//            Send();
+//        }
+//        if(globalCount == 4){
+//            estadoComandos = STATELEDS;
+//            estadoJuego = PLAY;
+//            Send();
+//        }
+        break;
+    case PLAY:
+        ui->textBrowser->append("PLAY");
+        break;
+
+    default:
+        break;
+    }
+
+    ui->textBrowser->append("ENDGAME");
+}
 
 
 
+void MainWindow::on_pushButton_clicked()
+{
+   estadoComandos = SETLEDS;
+   Send();
+}
 
+void MainWindow::on_pushButton_2_clicked()
+{
+    estadoComandos = GETLEDS;
+    Send();
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void MainWindow::on_pushButton_3_clicked()
+{
+    estadoComandos = GETBUTTONS;
+    Send();
+}
 

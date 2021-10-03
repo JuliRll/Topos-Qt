@@ -12,8 +12,6 @@
 #include <QtCore/QVariant>
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QComboBox>
-#include <QtWidgets/QGridLayout>
 #include <QtWidgets/QGroupBox>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenu>
@@ -36,10 +34,9 @@ public:
     QWidget *widget;
     QGroupBox *groupBox;
     QTextBrowser *textBrowser;
-    QGroupBox *groupBox_2;
-    QGridLayout *gridLayout;
-    QComboBox *comboBox;
-    QPushButton *pushButtonEnviar;
+    QPushButton *pushButton;
+    QPushButton *pushButton_2;
+    QPushButton *pushButton_3;
     QMenuBar *menubar;
     QMenu *menuMenu;
     QMenu *menuComunicaci_n;
@@ -66,31 +63,19 @@ public:
         widget->setGeometry(QRect(20, 189, 860, 191));
         groupBox = new QGroupBox(centralwidget);
         groupBox->setObjectName(QString::fromUtf8("groupBox"));
-        groupBox->setGeometry(QRect(200, 10, 691, 151));
+        groupBox->setGeometry(QRect(180, 10, 711, 151));
         textBrowser = new QTextBrowser(groupBox);
         textBrowser->setObjectName(QString::fromUtf8("textBrowser"));
         textBrowser->setGeometry(QRect(20, 20, 661, 121));
-        groupBox_2 = new QGroupBox(centralwidget);
-        groupBox_2->setObjectName(QString::fromUtf8("groupBox_2"));
-        groupBox_2->setGeometry(QRect(30, 30, 162, 97));
-        gridLayout = new QGridLayout(groupBox_2);
-        gridLayout->setObjectName(QString::fromUtf8("gridLayout"));
-        comboBox = new QComboBox(groupBox_2);
-        comboBox->addItem(QString());
-        comboBox->addItem(QString());
-        comboBox->addItem(QString());
-        comboBox->addItem(QString());
-        comboBox->addItem(QString());
-        comboBox->addItem(QString());
-        comboBox->setObjectName(QString::fromUtf8("comboBox"));
-
-        gridLayout->addWidget(comboBox, 0, 0, 1, 1);
-
-        pushButtonEnviar = new QPushButton(groupBox_2);
-        pushButtonEnviar->setObjectName(QString::fromUtf8("pushButtonEnviar"));
-
-        gridLayout->addWidget(pushButtonEnviar, 1, 0, 1, 1);
-
+        pushButton = new QPushButton(centralwidget);
+        pushButton->setObjectName(QString::fromUtf8("pushButton"));
+        pushButton->setGeometry(QRect(30, 20, 80, 21));
+        pushButton_2 = new QPushButton(centralwidget);
+        pushButton_2->setObjectName(QString::fromUtf8("pushButton_2"));
+        pushButton_2->setGeometry(QRect(30, 50, 80, 21));
+        pushButton_3 = new QPushButton(centralwidget);
+        pushButton_3->setObjectName(QString::fromUtf8("pushButton_3"));
+        pushButton_3->setGeometry(QRect(30, 80, 80, 21));
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);
         menubar->setObjectName(QString::fromUtf8("menubar"));
@@ -113,9 +98,6 @@ public:
 
         retranslateUi(MainWindow);
 
-        comboBox->setCurrentIndex(0);
-
-
         QMetaObject::connectSlotsByName(MainWindow);
     } // setupUi
 
@@ -130,16 +112,9 @@ public:
 #endif // QT_CONFIG(tooltip)
         actionConectar->setText(QCoreApplication::translate("MainWindow", "Conectar", nullptr));
         groupBox->setTitle(QCoreApplication::translate("MainWindow", "Flujo de Datos", nullptr));
-        groupBox_2->setTitle(QCoreApplication::translate("MainWindow", "Comunicaciones", nullptr));
-        comboBox->setItemText(0, QCoreApplication::translate("MainWindow", "Selector de comandos", nullptr));
-        comboBox->setItemText(1, QCoreApplication::translate("MainWindow", "ALIVE", nullptr));
-        comboBox->setItemText(2, QCoreApplication::translate("MainWindow", "GETBUTTONSTATE", nullptr));
-        comboBox->setItemText(3, QCoreApplication::translate("MainWindow", "SETLEDS", nullptr));
-        comboBox->setItemText(4, QString());
-        comboBox->setItemText(5, QString());
-
-        comboBox->setCurrentText(QCoreApplication::translate("MainWindow", "Selector de comandos", nullptr));
-        pushButtonEnviar->setText(QCoreApplication::translate("MainWindow", "Enviar", nullptr));
+        pushButton->setText(QCoreApplication::translate("MainWindow", "SET LEDS", nullptr));
+        pushButton_2->setText(QCoreApplication::translate("MainWindow", "GET LEDS", nullptr));
+        pushButton_3->setText(QCoreApplication::translate("MainWindow", "GET BUTTONS", nullptr));
         menuMenu->setTitle(QCoreApplication::translate("MainWindow", "Menu", nullptr));
         menuComunicaci_n->setTitle(QCoreApplication::translate("MainWindow", "Comunicaci\303\263n", nullptr));
     } // retranslateUi
