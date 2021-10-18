@@ -7,6 +7,8 @@
 #include <QLabel>
 #include <qpaintbox.h>
 #include <QMessageBox>
+#include <QDateTime>
+#include "settings.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -33,22 +35,21 @@ private slots:
 
     void Send();
 
-    void fondo();
+    void paintLeds();
+
+    void paintButtons();
 
     void juego();
-
     void on_pushButton_clicked();
-
-    void on_pushButton_2_clicked();
-
-    void on_pushButton_3_clicked();
 
 private:
     Ui::MainWindow *ui;
     QSerialPort *mySerial;
     QTimer *myTimer;
+    QTimer *gameTimer;
     QPaintBox *myPaintBox;
     QLabel *estado;
+    SettingsDialog *settings;
 
     typedef enum{
         START,
@@ -66,7 +67,7 @@ private:
 
     typedef enum{
         ALIVE=0xF0,
-        GETBUTTONSTATE=0xFA,
+        BUTTONEVENT=0xFA,
         GETBUTTONS = 0xFD,
         GETLEDS=0xFB,
         SETLEDS=0xFC,
@@ -75,14 +76,17 @@ private:
     _eID estadoComandos;
 
     typedef enum{
-        WAIT,
+        BEGIN,
+        BUTTONS,
         INTRO,
         PLAY,
+        END,
+        DEFAULT,
     }_eGame;
 
     _eGame estadoJuego;
 
-    uint16_t state, globalCount = 0;
+    uint8_t state;
 
     int8_t angulo = 0;
 
@@ -96,12 +100,30 @@ private:
 
     _sDatos rxData, txData;
 
-    uint8_t boton[4] = {0,0,0,0};
-    uint8_t num[6] = {1,2,4,8,0,15};
-    uint8_t auxState = 1,auxNum = 0;
-    uint16_t ledsAux,buttonsAux;
+
+
+    short checked = 0;
+    uint16_t boton[4] = {0,0,0,0};
+    uint8_t indice, partidaN = 1;
+    uint32_t contTime, timeLeds[4], randsOut[4];
+    uint8_t indiceLeds = 15;
+    uint8_t auxState = 0;
+    int32_t fallos = 0, aciertos = 0, errores = 0, puntaje = 0, record = -400;
+    uint16_t ledsAux,buttonsAux, auxMask = 0;
     uint32_t timeRead = 0;
-    int enabled = 0;
+    uint32_t timeManager = 40;
+
+    typedef struct {
+        bool b1: 1;
+        bool b2: 1;
+        bool b3: 1;
+        bool b4: 1;
+        bool b5: 1;
+        bool b6: 1;
+        bool b7: 1;
+    }Flags;
+
+    Flags flags, flags2;
 
     typedef union {
         float f32;
@@ -115,6 +137,5 @@ private:
     }_udat;
 
     _udat myWord;
-
 };
-#endif // MAINWINDOW_H
+#endif
